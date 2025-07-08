@@ -142,7 +142,7 @@ function App() {
 						<option value="expense">Despesa</option>
 					</select>
 				</div>
-				<div>
+				<div className="space-x-2">
 					<button
 					onClick={handleAddClick}
 					className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4"
