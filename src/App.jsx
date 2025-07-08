@@ -55,6 +55,11 @@ function App() {
 		);
 	};
 
+	const handlerLimpar = ()=>{
+	setSelectedCategory("all")
+	setSelectedType("all")
+	}
+
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);
 		setIsModalOpen(true);

@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Timestamp } from 'firebase/firestore';
 
+// You might want to define your categories in a separate file or as a constant
+const CATEGORIES = [
+  'Alimentação',
+  'Transporte',
+  'Moradia',
+  'Salário',
+  'Investimentos',
+  'Lazer',
+  'Saúde',
+  'Educação',
+  'Outros',
+];
+
 function TransactionForm({ addOrUpdateTransaction, editingTransaction, setEditingTransaction, onClose }) {
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
-  const [category, setCategory] = useState('');
-  const [date, setDate] = useState('');
+  const [category, setCategory] = useState(CATEGORIES[0]); // Set initial category to the first one
+  const [dateTime, setDateTime] = useState(''); // Combined date and time state
   const [type, setType] = useState('revenue'); // 'revenue' or 'expense'
 
   useEffect(() => {
@@ -13,13 +26,20 @@ function TransactionForm({ addOrUpdateTransaction, editingTransaction, setEditin
       setDescription(editingTransaction.description);
       setValue(editingTransaction.value);
       setCategory(editingTransaction.category);
-      setDate(editingTransaction.date.toDate().toISOString().split('T')[0]);
+      // Convert Firebase Timestamp to a local datetime string for input
+      const dateObj = editingTransaction.date.toDate();
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      const hours = String(dateObj.getHours()).padStart(2, '0');
+      const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+      setDateTime(`${year}-${month}-${day}T${hours}:${minutes}`);
       setType(editingTransaction.type);
     } else {
       setDescription('');
       setValue('');
-      setCategory('');
-      setDate('');
+      setCategory(CATEGORIES[0]); // Reset to first category
+      setDateTime('');
       setType('revenue');
     }
   }, [editingTransaction]);
@@ -30,13 +50,13 @@ function TransactionForm({ addOrUpdateTransaction, editingTransaction, setEditin
       description,
       value: parseFloat(value),
       category,
-      date: Timestamp.fromDate(new Date(date)),
+      date: Timestamp.fromDate(new Date(dateTime)), // Convert combined date-time string to Date object then to Timestamp
       type,
     });
     setDescription('');
     setValue('');
-    setCategory('');
-    setDate('');
+    setCategory(CATEGORIES[0]); // Reset to first category
+    setDateTime('');
     setType('revenue');
     setEditingTransaction(null);
     onClose();
@@ -71,23 +91,28 @@ function TransactionForm({ addOrUpdateTransaction, editingTransaction, setEditin
         </div>
         <div>
           <label htmlFor="category" className="block text-gray-700 text-sm font-bold mb-2">Categoria:</label>
-          <input
-            type="text"
+          <select
             id="category"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
-          />
+          >
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
-          <label htmlFor="date" className="block text-gray-700 text-sm font-bold mb-2">Data:</label>
+          <label htmlFor="dateTime" className="block text-gray-700 text-sm font-bold mb-2">Data e Hora:</label>
           <input
-            type="date"
-            id="date"
+            type="datetime-local" // Changed to datetime-local
+            id="dateTime"
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            value={dateTime}
+            onChange={(e) => setDateTime(e.target.value)}
             required
           />
         </div>
@@ -128,7 +153,10 @@ function TransactionForm({ addOrUpdateTransaction, editingTransaction, setEditin
       {editingTransaction && (
         <button
           type="button"
-          onClick={() => setEditingTransaction(null)}
+          onClick={() => {
+            setEditingTransaction(null);
+            onClose(); // Close modal when canceling edit
+          }}
           className="ml-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
           Cancelar Edição

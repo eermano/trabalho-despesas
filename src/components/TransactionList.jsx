@@ -11,7 +11,11 @@ function TransactionList({ transactions, handleEdit, deleteTransaction }) {
               <div className="flex-1 mb-2 sm:mb-0">
                 <p className="text-lg font-semibold text-gray-800">{transaction.description}</p>
                 <span className="inline-block bg-blue-200 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">{transaction.category}</span>
-                <p className="text-sm text-gray-500">{new Date(transaction.date.seconds * 1000).toLocaleDateString()}</p>
+                {/* Updated to show both date and time */}
+                <p className="text-sm text-gray-500">
+                  {new Date(transaction.date.seconds * 1000).toLocaleDateString()} &nbsp;
+                  {new Date(transaction.date.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
                 <p className={`text-xl font-bold ${transaction.type === 'revenue' ? 'text-green-600' : 'text-red-600'}`}>
                   R$ {typeof transaction.value === 'number' ? transaction.value.toFixed(2) : '0.00'}
                 </p>
